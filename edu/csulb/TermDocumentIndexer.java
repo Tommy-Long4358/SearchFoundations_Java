@@ -17,13 +17,19 @@ import java.util.Scanner;
 
 public class TermDocumentIndexer {
 	public static void main(String[] args) {
-		// Create a DocumentCorpus to load .txt documents from the project directory.
-		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get("MobyDick10Chapters").toAbsolutePath(), ".txt");
+		Scanner input = new Scanner(System.in);
+
+		System.out.println("Enter a directory to retrieve files from: ");
+		String path = input.next();
+
+		System.out.println("Enter file type: ");
+		String fileType = input.next();
+
+		// Create a DocumentCorpus to load documents from the inputted project directory.
+		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get(path).toAbsolutePath(), fileType);
 
 		// Index the documents of the corpus.
 		Index index = indexCorpus(corpus);
-
-		Scanner input = new Scanner(System.in);
 		while (true)
 		{
 			System.out.println("\n1. Search for Term\n2. Quit");

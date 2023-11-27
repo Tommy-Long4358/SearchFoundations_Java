@@ -8,14 +8,14 @@ import java.util.*;
  */
 public class InvertedIndex implements Index
 {
-    private final HashMap<String, List<Posting>> termsMap;
+    private final HashMap<String, List<Posting>> mTerms;
 
     /**
      * Constructs an empty index with given vocabulary set and corpus size.
      */
     public InvertedIndex()
     {
-        termsMap = new HashMap<String, List<Posting>>();
+        mTerms = new HashMap<String, List<Posting>>();
     }
 
     /**
@@ -24,10 +24,8 @@ public class InvertedIndex implements Index
      */
     public void addTerm(String term, int documentId)
     {
-        // TODO: Implement addTerm method.
-
         // Check if term doesn't exist in HashMap.
-        if (!termsMap.containsKey(term))
+        if (!mTerms.containsKey(term))
         {
             // Initialize list.
             List<Posting> postingList = new ArrayList<Posting>();
@@ -36,14 +34,14 @@ public class InvertedIndex implements Index
             postingList.add(new Posting(documentId));
 
             // Create a key-value pair for the term.
-            termsMap.put(term, postingList);
+            mTerms.put(term, postingList);
         }
         else
         {
             // Term does exist. We check if the documentId is already in the list of postings.
 
             // Get postings list of given term.
-            List<Posting> postingList = termsMap.get(term);
+            List<Posting> postingList = mTerms.get(term);
 
             // Check if documentId is not in list of postings.
             if (documentId != postingList.get(postingList.size() - 1).getDocumentId())
@@ -52,7 +50,7 @@ public class InvertedIndex implements Index
                 postingList.add(new Posting(documentId));
 
                 // Replace postings list in HashMap with new postings list.
-                termsMap.put(term, postingList);
+                mTerms.put(term, postingList);
             }
         }
     }
@@ -62,16 +60,16 @@ public class InvertedIndex implements Index
     {
         // Do an O(1) lookup to find the string in the dictionary.
         // Return the list associated with the string.
-        if (termsMap.get(term) == null)
+        if (mTerms.get(term) == null)
         {
             return new ArrayList<Posting>();
         }
 
-        return termsMap.get(term);
+        return mTerms.get(term);
     }
 
     public List<String> getVocabulary() {
-        return Collections.unmodifiableList(new ArrayList<String>(termsMap.keySet()));
+        return Collections.unmodifiableList(new ArrayList<String>(mTerms.keySet()));
     }
 }
 
