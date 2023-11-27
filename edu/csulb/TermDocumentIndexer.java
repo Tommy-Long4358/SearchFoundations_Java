@@ -4,6 +4,7 @@ import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.Document;
 import cecs429.documents.DocumentCorpus;
 import cecs429.indexing.Index;
+import cecs429.indexing.InvertedIndex;
 import cecs429.indexing.Posting;
 import cecs429.indexing.TermDocumentIndex;
 import cecs429.text.BasicTokenProcessor;
@@ -11,6 +12,7 @@ import cecs429.text.EnglishTokenStream;
 
 import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
 
 public class TermDocumentIndexer {
@@ -19,7 +21,7 @@ public class TermDocumentIndexer {
 		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get("MobyDick10Chapters").toAbsolutePath(), ".txt");
 
 		// Index the documents of the corpus.
-		Index index = indexCorpus(corpus) ;
+		Index index = indexCorpus(corpus);
 
 		Scanner input = new Scanner(System.in);
 		while (true)
@@ -27,6 +29,7 @@ public class TermDocumentIndexer {
 			System.out.println("\n1. Search for Term\n2. Quit");
 			System.out.println("Select an option:");
 
+			// Input validator.
 			int choice = 0;
 			boolean valid = false;
 			while (!valid)
@@ -50,6 +53,7 @@ public class TermDocumentIndexer {
 				}
 			}
 
+			// Break out of loop if 2 is inputted.
 			if (choice == 2)
 			{
 				System.out.println("Goodbye!");
@@ -61,38 +65,35 @@ public class TermDocumentIndexer {
 
 			System.out.println("\nSearch Results:");
 
-			for (Posting p : index.getPostings(query)) {
-				System.out.println("Document " + corpus.getDocument(p.getDocumentId()).getTitle());
+			List<Posting> indexPostings = index.getPostings(query);
+
+			// Check if postings list is empty or not.
+			if (indexPostings.isEmpty())
+			{
+				// Term was not found.
+				System.out.println("No Results Found!");
+			}
+			else
+			{
+				// Print out document file names where term was found.
+				for (Posting p : indexPostings)
+				{
+					System.out.println("Document " + corpus.getDocument(p.getDocumentId()).getTitle());
+				}
 			}
 		}
 	}
 	
 	private static Index indexCorpus(DocumentCorpus corpus) {
-		HashSet<String> vocabulary = new HashSet<>();
 		BasicTokenProcessor processor = new BasicTokenProcessor();
-		
-		// First, build the vocabulary hash set.
-		for (Document d : corpus.getDocuments()) {
-			System.out.println("Found document " + d.getTitle());
-
-			// Tokenize text
-			EnglishTokenStream tokenStream = new EnglishTokenStream(d.getContent());
-
-			for(String token: tokenStream.getTokens())
-			{
-				// Process token
-				String term = processor.processToken(token);
-
-				// Add processed token to HashSet of vocabulary
-				vocabulary.add(term);
-			}
-		}
 
 		// Create a vocabulary x corpus sized matrix
-		TermDocumentIndex tdi = new TermDocumentIndex(vocabulary, corpus.getCorpusSize());
+		InvertedIndex invertIndexer = new InvertedIndex();
 
-		for(Document d: corpus.getDocuments())
+		for (Document d: corpus.getDocuments())
 		{
+			System.out.println("Found document " + d.getTitle());
+
 			// Tokenize the text
 			EnglishTokenStream tokenStream = new EnglishTokenStream(d.getContent());
 
@@ -101,10 +102,11 @@ public class TermDocumentIndexer {
 				// Process the token
 				String term = processor.processToken(token);
 
-				// Put a "1" in the matrix for that document ID and term
-				tdi.addTerm(term, d.getId());
+				// Insert term into the invertedIndex.
+				invertIndexer.addTerm(term, d.getId());
 			}
 		}
-		return tdi;
+
+		return invertIndexer;
 	}
 }
