@@ -11,6 +11,7 @@ import cecs429.text.EnglishTokenStream;
 
 import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.Scanner;
 
 public class TermDocumentIndexer {
 	public static void main(String[] args) {
@@ -20,16 +21,50 @@ public class TermDocumentIndexer {
 		// Index the documents of the corpus.
 		Index index = indexCorpus(corpus) ;
 
-		// We aren't ready to use a full query parser; for now, we'll only support single-term queries.
-		String query = "whale"; // hard-coded search for "whale"
+		Scanner input = new Scanner(System.in);
+		while (true)
+		{
+			System.out.println("\n1. Search for Term\n2. Quit");
+			System.out.println("Select an option:");
 
-		System.out.println("Search Results:");
+			int choice = 0;
+			boolean valid = false;
+			while (!valid)
+			{
+				if (input.hasNextInt())
+				{
+					choice = input.nextInt();
+					if (choice == 1 || choice == 2)
+					{
+						valid = true;
+					}
+					else
+					{
+						System.out.println( "Invalid Range." );
+					}
+				}
+				else
+				{
+					input.next(); //clear invalid string
+					System.out.println( "Invalid Input." );
+				}
+			}
 
-		for (Posting p : index.getPostings(query)) {
-			System.out.println("Document " + corpus.getDocument(p.getDocumentId()).getTitle());
+			if (choice == 2)
+			{
+				System.out.println("Goodbye!");
+				break;
+			}
+
+			System.out.println("Enter a Term: ");
+			String query = input.next();
+
+			System.out.println("\nSearch Results:");
+
+			for (Posting p : index.getPostings(query)) {
+				System.out.println("Document " + corpus.getDocument(p.getDocumentId()).getTitle());
+			}
 		}
-
-		// TODO: fix this application so the user is asked for a term to search.
 	}
 	
 	private static Index indexCorpus(DocumentCorpus corpus) {
@@ -40,24 +75,33 @@ public class TermDocumentIndexer {
 		for (Document d : corpus.getDocuments()) {
 			System.out.println("Found document " + d.getTitle());
 
+			// Tokenize text
 			EnglishTokenStream tokenStream = new EnglishTokenStream(d.getContent());
 
 			for(String token: tokenStream.getTokens())
 			{
+				// Process token
 				String term = processor.processToken(token);
+
+				// Add processed token to HashSet of vocabulary
 				vocabulary.add(term);
 			}
 		}
 
+		// Create a vocabulary x corpus sized matrix
 		TermDocumentIndex tdi = new TermDocumentIndex(vocabulary, corpus.getCorpusSize());
 
 		for(Document d: corpus.getDocuments())
 		{
+			// Tokenize the text
 			EnglishTokenStream tokenStream = new EnglishTokenStream(d.getContent());
 
 			for(String token: tokenStream.getTokens())
 			{
+				// Process the token
 				String term = processor.processToken(token);
+
+				// Put a "1" in the matrix for that document ID and term
 				tdi.addTerm(term, d.getId());
 			}
 		}

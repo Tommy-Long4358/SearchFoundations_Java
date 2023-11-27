@@ -21,7 +21,8 @@ public class TermDocumentIndex implements Index {
 		mVocabulary = new ArrayList<String>();
 		mVocabulary.addAll(vocabulary);
 		mCorpusSize = corpuseSize;
-		
+
+		// Sort vocabulary in alphabetical order.
 		Collections.sort(mVocabulary);
 	}
 	
@@ -38,13 +39,12 @@ public class TermDocumentIndex implements Index {
 	@Override
 	public List<Posting> getPostings(String term) {
 		List<Posting> results = new ArrayList<>();
-		
-		// TODO: implement this method.
+
 		// Binary search the mVocabulary array for the given term.
-		// Walk down the mMatrix row for the term and collect the document IDs (column indices)
-		// of the "true" entries.
 		int vIndex = Collections.binarySearch(mVocabulary, term);
 
+		// Walk down the mMatrix row for the term and collect the document IDs (column indices)
+		// of the "true" entries.
 		for(int i = 0; i < mMatrix[vIndex].length; i++)
 		{
 			if (mMatrix[vIndex][i] && vIndex >= 0)
